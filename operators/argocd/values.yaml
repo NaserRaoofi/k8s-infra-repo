@@ -1,170 +1,231 @@
-# ArgoCD Base Values Configuration
-# This file contains common configuration for all environments
+# ArgoCD Helm Chart Values - Best Practices Configuration
+# https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd
 
-# Global configuration
 global:
-  domain: argocd.example.com
+  # Image pull policy
+  imagePullPolicy: IfNotPresent
 
-argo-cd:
-  # Global configuration
-  global:
-    logging:
-      level: info
-      format: json
+# ArgoCD Server Configuration
+server:
+  # Disable ingress for localhost setup
+  ingress:
+    enabled: false
 
-  # Argo CD configurations
-  configs:
-    # Configuration for ArgoCD server parameters
-    params:
-      server.insecure: false
-      server.rootpath: /
+  # Configure service type for external access via LoadBalancer
+  service:
+    type: LoadBalancer
+    port: 80
+    targetPort: 8080
 
-    # RBAC configuration
-    rbac:
-      create: true
-      policy.default: role:readonly
+  # Security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    fsGroup: 999
 
-    # Configuration management
-    cm:
-      # Allow applications in any namespace
-      application.namespaces: "*"
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
 
-      # Enable status badge feature
-      statusbadge.enabled: "true"
+  # Additional command line arguments
+  extraArgs:
+    - --insecure # Remove this if using HTTPS
 
-      # Timeout settings
-      timeout.reconciliation: "180s"
-      timeout.hard.reconciliation: "0s"
+  # Tolerations for node taints
+  tolerations:
+    - key: "systempods"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+    - key: "dedicated"
+      operator: "Equal"
+      value: "database"
+      effect: "NoSchedule"
 
-      # Resource exclusions - ignore common Kubernetes resources that shouldn't be managed
-      resource.exclusions: |
-        - apiGroups:
-          - cilium.io
-          kinds:
-          - CiliumIdentity
-          clusters:
-          - "*"
-        - apiGroups:
-          - karpenter.sh
-          kinds:
-          - NodePool
-          - EC2NodeClass
-          clusters:
-          - "*"
+# ArgoCD Repository Server
+repoServer:
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
 
-  # Application Controller configuration
-  controller:
-    replicas: 1
-    metrics:
-      enabled: true
+  # Security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    fsGroup: 999
 
-    # Resource limits
-    resources:
-      limits:
-        cpu: 2000m
-        memory: 4Gi
-      requests:
-        cpu: 500m
-        memory: 1Gi
+  # Tolerations for node taints
+  tolerations:
+    - key: "systempods"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+    - key: "dedicated"
+      operator: "Equal"
+      value: "database"
+      effect: "NoSchedule"
 
-  # Repository Server configuration
-  repoServer:
-    replicas: 1
-    metrics:
-      enabled: true
+# ArgoCD Application Controller
+controller:
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 250m
+      memory: 1Gi
 
-    # Resource limits
-    resources:
-      limits:
-        cpu: 1000m
-        memory: 2Gi
-      requests:
-        cpu: 250m
-        memory: 512Mi
+  # Security context
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    fsGroup: 999
+
+  # Tolerations for node taints
+  tolerations:
+    - key: "systempods"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+    - key: "dedicated"
+      operator: "Equal"
+      value: "database"
+      effect: "NoSchedule"
+
+# ArgoCD Redis
+redis:
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+
+  # Security context
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+
+  # Tolerations for node taints
+  tolerations:
+    - key: "systempods"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+    - key: "dedicated"
+      operator: "Equal"
+      value: "database"
+      effect: "NoSchedule"
+
+# ArgoCD ApplicationSet Controller
+applicationSet:
+  enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Tolerations for node taints
+  tolerations:
+    - key: "systempods"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+    - key: "dedicated"
+      operator: "Equal"
+      value: "database"
+      effect: "NoSchedule"
+
+# ArgoCD Notifications Controller
+notifications:
+  enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+  # Tolerations for node taints
+  tolerations:
+    - key: "systempods"
+      operator: "Equal"
+      value: "true"
+      effect: "NoSchedule"
+    - key: "dedicated"
+      operator: "Equal"
+      value: "database"
+      effect: "NoSchedule"
+
+# ArgoCD Dex Server (for OIDC)
+dex:
+  enabled: false # Enable if you need OIDC authentication
+  resources:
+    limits:
+      cpu: 50m
+      memory: 64Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+# Configuration for ArgoCD
+configs:
+  # ArgoCD configuration
+  cm:
+    # URL for ArgoCD server (will be updated with LoadBalancer URL)
+    url: https://argocd-server
+
+    # Enable anonymous read-only access (disable in production)
+    users.anonymous.enabled: "false"
+
+    # Application instance label key
+    application.instanceLabelKey: argocd.argoproj.io/instance
+
+    # Server configuration
+    server.rbac.log.enforce.enable: "true"
+
+    # Repository configuration
+    repositories: |
+      - type: git
+        url: https://github.com/NaserRaoofi/k8s-infra-repo
+        name: k8s-infra-repo
+
+  # RBAC configuration
+  rbac:
+    # Default policy
+    policy.default: role:readonly
+
+    # Admin users (update with your users)
+    policy.csv: |
+      p, role:admin, applications, *, */*, allow
+      p, role:admin, clusters, *, *, allow
+      p, role:admin, repositories, *, *, allow
+      g, argocd-admins, role:admin
 
   # ArgoCD Server configuration
-  server:
-    replicas: 1
-    metrics:
-      enabled: true
+  params:
+    # Disable admin user (use RBAC instead)
+    server.disable.auth: false
 
-    # Resource limits
-    resources:
-      limits:
-        cpu: 500m
-        memory: 1Gi
-      requests:
-        cpu: 100m
-        memory: 256Mi
+    # Server configuration
+    server.insecure: true # Set to false when using HTTPS
 
-    # Ingress configuration - disabled by default, override in environment values
-    ingress:
-      enabled: false
-
-    # Service configuration
-    service:
-      type: ClusterIP
-
-  # ApplicationSet controller configuration
-  applicationSet:
-    replicas: 1
-    metrics:
-      enabled: true
-
-    # Resource limits
-    resources:
-      limits:
-        cpu: 500m
-        memory: 1Gi
-      requests:
-        cpu: 100m
-        memory: 256Mi
-
-  # Notifications controller configuration
-  notifications:
-    enabled: true
-    metrics:
-      enabled: true
-
-    # Resource limits
-    resources:
-      limits:
-        cpu: 500m
-        memory: 512Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-
-  # Dex OIDC configuration
-  dex:
-    enabled: true
-    metrics:
-      enabled: true
-
-    # Resource limits
-    resources:
-      limits:
-        cpu: 500m
-        memory: 512Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-
-  # Redis configuration - using single Redis instance by default
-  redis:
-    enabled: true
-    metrics:
-      enabled: true
-
-    # Resource limits
-    resources:
-      limits:
-        cpu: 500m
-        memory: 512Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-
-  # Redis HA configuration - disabled by default
-  redis-ha:
-    enabled: false
+    # Repository server parallelism limit
+    reposerver.parallelism.limit: "10"
