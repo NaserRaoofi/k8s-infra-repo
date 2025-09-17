@@ -1,0 +1,170 @@
+# ArgoCD Base Values Configuration
+# This file contains common configuration for all environments
+
+# Global configuration
+global:
+  domain: argocd.example.com
+
+argo-cd:
+  # Global configuration
+  global:
+    logging:
+      level: info
+      format: json
+
+  # Argo CD configurations
+  configs:
+    # Configuration for ArgoCD server parameters
+    params:
+      server.insecure: false
+      server.rootpath: /
+
+    # RBAC configuration
+    rbac:
+      create: true
+      policy.default: role:readonly
+
+    # Configuration management
+    cm:
+      # Allow applications in any namespace
+      application.namespaces: "*"
+
+      # Enable status badge feature
+      statusbadge.enabled: "true"
+
+      # Timeout settings
+      timeout.reconciliation: "180s"
+      timeout.hard.reconciliation: "0s"
+
+      # Resource exclusions - ignore common Kubernetes resources that shouldn't be managed
+      resource.exclusions: |
+        - apiGroups:
+          - cilium.io
+          kinds:
+          - CiliumIdentity
+          clusters:
+          - "*"
+        - apiGroups:
+          - karpenter.sh
+          kinds:
+          - NodePool
+          - EC2NodeClass
+          clusters:
+          - "*"
+
+  # Application Controller configuration
+  controller:
+    replicas: 1
+    metrics:
+      enabled: true
+
+    # Resource limits
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+  # Repository Server configuration
+  repoServer:
+    replicas: 1
+    metrics:
+      enabled: true
+
+    # Resource limits
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+
+  # ArgoCD Server configuration
+  server:
+    replicas: 1
+    metrics:
+      enabled: true
+
+    # Resource limits
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+    # Ingress configuration - disabled by default, override in environment values
+    ingress:
+      enabled: false
+
+    # Service configuration
+    service:
+      type: ClusterIP
+
+  # ApplicationSet controller configuration
+  applicationSet:
+    replicas: 1
+    metrics:
+      enabled: true
+
+    # Resource limits
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+  # Notifications controller configuration
+  notifications:
+    enabled: true
+    metrics:
+      enabled: true
+
+    # Resource limits
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  # Dex OIDC configuration
+  dex:
+    enabled: true
+    metrics:
+      enabled: true
+
+    # Resource limits
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  # Redis configuration - using single Redis instance by default
+  redis:
+    enabled: true
+    metrics:
+      enabled: true
+
+    # Resource limits
+    resources:
+      limits:
+        cpu: 500m
+        memory: 512Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  # Redis HA configuration - disabled by default
+  redis-ha:
+    enabled: false

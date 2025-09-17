@@ -1,0 +1,70 @@
+# ArgoCD Development Environment Configuration
+# Overrides for development environment
+
+argo-cd:
+  # Global configuration for dev
+  global:
+    domain: argocd-dev.example.com
+
+  # Configuration for dev environment
+  configs:
+    params:
+      server.insecure: true # Allow insecure connections in dev
+
+    cm:
+      # Dev-specific resource customizations
+      resource.customizations.health.argoproj.io_Application: |
+        hs = {}
+        hs.status = "Healthy"
+        hs.message = "Application is healthy"
+        return hs
+
+  # Server configuration for dev
+  server:
+    # Enable ingress for dev environment
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hostname: argocd-dev.example.com
+      annotations:
+        nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+        nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+      tls: false
+
+    # Service type for dev
+    service:
+      type: ClusterIP
+
+  # Reduced resource requirements for dev
+  controller:
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+
+  repoServer:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 256Mi
+
+  # Single Redis instance for dev
+  redis:
+    enabled: true
+    resources:
+      limits:
+        cpu: 250m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+  # Disable HA components in dev
+  redis-ha:
+    enabled: false

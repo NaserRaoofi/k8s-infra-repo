@@ -1,0 +1,27 @@
+apiVersion: v2
+name: argocd
+description: A Helm chart for ArgoCD deployment
+type: application
+version: 1.0.0
+appVersion: "v3.1.5"
+
+dependencies:
+  - name: argo-cd
+    version: 8.3.9
+    repository: https://argoproj.github.io/argo-helm
+
+maintainers:
+  - name: Platform Team
+    email: platform@example.com
+
+keywords:
+  - argocd
+  - gitops
+  - kubernetes
+  - ci/cd
+  - continuous-deployment
+
+home: https://argo-cd.readthedocs.io/
+sources:
+  - https://github.com/argoproj/argo-cd
+  - https://github.com/argoproj/argo-helm

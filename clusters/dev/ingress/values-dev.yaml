@@ -1,0 +1,13 @@
+# Values specific to the development environment
+controller:
+  replicaCount: 1
+  service:
+    type: LoadBalancer
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-type: "external"
+      service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+  nodeSelector:
+    environment: dev
+
+clusterName: my-project-dev-eks
+vpcId: vpc-0d74de15e54db138f

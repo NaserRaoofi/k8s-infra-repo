@@ -1,0 +1,21 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: alb-controller
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://aws.github.io/eks-charts
+    targetRevision: HEAD
+    path: helm
+    helm:
+      valueFiles:
+        - values-dev.yaml
+  destination:
+    server: https://D518CFBAE4022A75802C81E2719E969F.gr7.us-east-1.eks.amazonaws.com
+    namespace: ingress
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

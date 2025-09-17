@@ -1,0 +1,32 @@
+nameReference:
+  - kind: Secret
+    version: v1
+    fieldSpecs:
+      - path: spec/secretName
+        kind: Ingress
+  - kind: Service
+    version: v1
+    fieldSpecs:
+      - path: spec/backend/serviceName
+        kind: Ingress
+  - kind: ConfigMap
+    version: v1
+    fieldSpecs:
+      - path: spec/volumes/configMap/name
+        kind: Deployment
+      - path: spec/volumes/configMap/name
+        kind: StatefulSet
+
+namespace:
+  - path: metadata/namespace
+    create: true
+    kind: Deployment
+  - path: metadata/namespace
+    create: true
+    kind: Service
+  - path: metadata/namespace
+    create: true
+    kind: ConfigMap
+  - path: metadata/namespace
+    create: true
+    kind: Secret
