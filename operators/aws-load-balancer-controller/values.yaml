@@ -22,8 +22,8 @@ serviceAccount:
   create: true
   # Annotations to add to the service account
   annotations:
-    # IAM role for service account (IRSA) - AWS Account ID: 817100478429
-    eks.amazonaws.com/role-arn: arn:aws:iam::817100478429:role/AmazonEKSLoadBalancerControllerRole
+    # IAM role for service account (IRSA) - Using existing role
+    eks.amazonaws.com/role-arn: arn:aws:iam::817100478429:role/dev-my-project-alb-controller-role
   # The name of the service account to use.
   name: aws-load-balancer-controller
   # Automount API credentials for a Service Account.
