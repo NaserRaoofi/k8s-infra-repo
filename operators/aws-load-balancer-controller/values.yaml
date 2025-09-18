@@ -116,8 +116,8 @@ ingressClassParams:
 # To use IngressClass resource instead of annotation
 createIngressClassResource: true
 
-# The VPC ID for the Kubernetes cluster - will be auto-detected
-vpcId:
+# The VPC ID for the Kubernetes cluster
+vpcId: vpc-020bae43acb732eda
 
 # This is alternative to vpcId - will be auto-detected
 vpcTags: {}

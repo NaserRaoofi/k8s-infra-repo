@@ -13,10 +13,10 @@ spec:
       targetRevision: 1.13.4
       helm:
         valueFiles:
-          - values.yaml
+          - $values/operators/aws-load-balancer-controller/values.yaml
     - repoURL: https://github.com/NaserRaoofi/k8s-infra-repo
       targetRevision: HEAD
-      path: operators/aws-load-balancer-controller
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: aws-load-balancer-system
