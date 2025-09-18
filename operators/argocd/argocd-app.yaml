@@ -7,10 +7,16 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
-  source:
-    repoURL: https://github.com/NaserRaoofi/k8s-infra-repo
-    targetRevision: main
-    path: operators/argocd
+  sources:
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      targetRevision: 7.5.2
+      helm:
+        valueFiles:
+          - values.yaml
+    - repoURL: https://github.com/NaserRaoofi/k8s-infra-repo
+      targetRevision: HEAD
+      path: operators/argocd
   destination:
     server: https://kubernetes.default.svc
     namespace: argocd

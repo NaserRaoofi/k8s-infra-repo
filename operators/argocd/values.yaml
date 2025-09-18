@@ -11,9 +11,9 @@ server:
   ingress:
     enabled: false
 
-  # Configure service type for external access via LoadBalancer
+  # Configure service type for localhost access
   service:
-    type: LoadBalancer
+    type: ClusterIP
     port: 80
     targetPort: 8080
 
@@ -189,8 +189,8 @@ dex:
 configs:
   # ArgoCD configuration
   cm:
-    # URL for ArgoCD server (will be updated with LoadBalancer URL)
-    url: https://argocd-server
+    # URL for ArgoCD server - localhost access (update port as needed)
+    url: http://localhost:8080
 
     # Enable anonymous read-only access (disable in production)
     users.anonymous.enabled: "false"
