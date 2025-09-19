@@ -14,8 +14,8 @@ metadata:
   labels:
     app.kubernetes.io/name: {{ $name }}
     app.kubernetes.io/component: namespace
-    app.kubernetes.io/managed-by: {{ $.Values.global.labels["app.kubernetes.io/managed-by"] | default "helm" }}
-    app.kubernetes.io/part-of: {{ $.Values.global.labels["app.kubernetes.io/part-of"] | default "operators" }}
+    app.kubernetes.io/managed-by: {{ index $.Values.global.labels "app.kubernetes.io/managed-by" | default "helm" }}
+    app.kubernetes.io/part-of: {{ index $.Values.global.labels "app.kubernetes.io/part-of" | default "operators" }}
   annotations:
     argocd.argoproj.io/sync-wave: "-5"  # Create namespaces first
 {{- end }}
