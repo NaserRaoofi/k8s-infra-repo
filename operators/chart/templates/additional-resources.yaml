@@ -28,7 +28,7 @@ metadata:
 {{- range $resource := $operator.additionalResources }}
 ---
 # Additional resource for {{ $operatorName }}
-{{ $resource | toYaml }}
+{{- $resource | toYaml | nindent 0 }}
 {{- end }}
 
 {{- end }}
