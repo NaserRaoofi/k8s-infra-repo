@@ -1,0 +1,35 @@
+{{/*
+Additional Kubernetes resources for operators
+This template handles all non-Helm resources: namespaces, ingresses, etc.
+*/}}
+
+{{/* Create namespaces first with sync wave -5 */}}
+{{- range $name, $operator := .Values.operators }}
+{{- if $operator.enabled }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $operator.namespace }}
+  labels:
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/component: namespace
+    app.kubernetes.io/managed-by: {{ $.Values.global.labels["app.kubernetes.io/managed-by"] | default "helm" }}
+    app.kubernetes.io/part-of: {{ $.Values.global.labels["app.kubernetes.io/part-of"] | default "operators" }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-5"  # Create namespaces first
+{{- end }}
+{{- end }}
+
+{{/* Create additional resources with their specified sync waves */}}
+{{- range $operatorName, $operator := .Values.operators }}
+{{- if and $operator.enabled $operator.additionalResources }}
+
+{{- range $resource := $operator.additionalResources }}
+---
+# Additional resource for {{ $operatorName }}
+{{ $resource | toYaml }}
+{{- end }}
+
+{{- end }}
+{{- end }}

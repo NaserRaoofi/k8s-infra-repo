@@ -1,0 +1,93 @@
+{{/*
+Generic ArgoCD Application template for operators
+This template generates ArgoCD Applications for each enabled operator
+*/}}
+{{- range $name, $operator := .Values.operators }}
+{{- if $operator.enabled }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ $name }}
+  namespace: {{ $.Values.global.argocdNamespace }}
+  {{- if $operator.labels }}
+  labels:
+    {{- toYaml $operator.labels | nindent 4 }}
+  {{- end }}
+  {{- if $.Values.global.labels }}
+    {{- toYaml $.Values.global.labels | nindent 4 }}
+  {{- end }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "{{ $operator.syncWave | default "1" }}"
+  {{- if $operator.annotations }}
+    {{- toYaml $operator.annotations | nindent 4 }}
+  {{- end }}
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ $operator.project | default $.Values.global.project }}
+
+  {{- if $operator.sources }}
+  # Multi-source configuration
+  sources:
+    {{- if $operator.helm }}
+    # Helm chart source
+    - repoURL: {{ $operator.helm.repoURL }}
+      chart: {{ $operator.helm.chart }}
+      targetRevision: {{ $operator.helm.version }}
+      helm:
+        valueFiles:
+          - $values/operators/values/{{ $name }}.yaml
+        {{- if $operator.helm.parameters }}
+        parameters:
+          {{- toYaml $operator.helm.parameters | nindent 10 }}
+        {{- end }}
+    {{- end }}
+
+    # Git repository source for values
+    - repoURL: {{ $.Values.global.gitRepo }}
+      targetRevision: {{ $operator.gitRef | default $.Values.global.gitRef }}
+      ref: values
+      {{- if $operator.path }}
+      path: {{ $operator.path }}
+      {{- end }}
+  {{- else }}
+  # Single source configuration (Git only)
+  source:
+    repoURL: {{ $.Values.global.gitRepo }}
+    targetRevision: {{ $operator.gitRef | default $.Values.global.gitRef }}
+    path: {{ $operator.path | default (printf "operators/%s" $name) }}
+    {{- if $operator.kustomize }}
+    kustomize:
+      {{- toYaml $operator.kustomize | nindent 6 }}
+    {{- end }}
+  {{- end }}
+
+  destination:
+    server: {{ $operator.destinationServer | default $.Values.global.destinationServer }}
+    namespace: {{ $operator.namespace }}
+
+  syncPolicy:
+    {{- if or $operator.syncPolicy $.Values.global.syncPolicy }}
+    {{- $syncPolicy := mergeOverwrite (deepCopy $.Values.global.syncPolicy) ($operator.syncPolicy | default dict) }}
+    {{- if $syncPolicy.automated }}
+    automated:
+      {{- toYaml $syncPolicy.automated | nindent 6 }}
+    {{- end }}
+    {{- if $syncPolicy.syncOptions }}
+    syncOptions:
+      {{- toYaml $syncPolicy.syncOptions | nindent 6 }}
+    {{- end }}
+    {{- if $syncPolicy.retry }}
+    retry:
+      {{- toYaml $syncPolicy.retry | nindent 6 }}
+    {{- end }}
+    {{- end }}
+
+  {{- if $operator.ignoreDifferences }}
+  ignoreDifferences:
+    {{- toYaml $operator.ignoreDifferences | nindent 4 }}
+  {{- end }}
+
+{{- end }}
+{{- end }}

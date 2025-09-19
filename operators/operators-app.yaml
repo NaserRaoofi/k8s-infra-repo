@@ -1,0 +1,64 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: operators
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: operators
+    app.kubernetes.io/component: app-of-apps
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/part-of: infrastructure
+  annotations:
+    argocd.argoproj.io/sync-wave: "-10" # Deploy before all other applications
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/NaserRaoofi/k8s-infra-repo
+    targetRevision: HEAD
+    path: operators/chart
+    helm:
+      # Default values file
+      valueFiles:
+        - values.yaml
+      # Environment-specific overrides (uncomment as needed)
+      # parameters:
+      #   - name: global.gitRef
+      #     value: main
+      #   - name: operators.cert-manager.enabled
+      #     value: "true"
+      #   - name: operators.external-dns.enabled
+      #     value: "true"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      - ApplyOutOfSyncOnly=true # Only apply resources that are out of sync
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Ignore differences in resource generation and other metadata
+  ignoreDifferences:
+    - group: argoproj.io
+      kind: Application
+      jsonPointers:
+        - /status
+        - /metadata/generation
+        - /metadata/resourceVersion
+        - /metadata/uid
+        - /metadata/creationTimestamp

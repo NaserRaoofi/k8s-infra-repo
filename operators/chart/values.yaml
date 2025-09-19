@@ -1,0 +1,150 @@
+# Global configuration for all operators
+global:
+  # Git repository containing operator configurations
+  gitRepo: https://github.com/NaserRaoofi/k8s-infra-repo
+  gitRef: HEAD
+
+  # ArgoCD configuration
+  argocdNamespace: argocd
+  project: default
+  destinationServer: https://kubernetes.default.svc
+
+  # Default sync policy for all operators
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Common labels applied to all applications
+  labels:
+    app.kubernetes.io/managed-by: helm
+    app.kubernetes.io/part-of: operators
+
+# Operator-specific configurations
+operators:
+  # ArgoCD - The GitOps controller itself
+  argocd:
+    enabled: true
+    namespace: argocd
+    syncWave: "1" # Deploy after namespaces (-5) are created
+    sources: true # Uses multi-source setup
+
+    helm:
+      repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      version: 7.5.2
+
+    labels:
+      app.kubernetes.io/name: argocd
+      app.kubernetes.io/component: gitops-controller
+
+    # Additional resources (ingress, etc.)
+    additionalResources:
+      - apiVersion: networking.k8s.io/v1
+        kind: Ingress
+        metadata:
+          name: argocd-server-ingress
+          namespace: argocd
+          annotations:
+            argocd.argoproj.io/sync-wave: "2" # Deploy after ArgoCD is ready
+            kubernetes.io/ingress.class: alb
+            alb.ingress.kubernetes.io/scheme: internet-facing
+            alb.ingress.kubernetes.io/target-type: ip
+            alb.ingress.kubernetes.io/load-balancer-name: argocd-alb
+            alb.ingress.kubernetes.io/backend-protocol: HTTPS
+            alb.ingress.kubernetes.io/backend-protocol-version: HTTP1
+            alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
+            alb.ingress.kubernetes.io/healthcheck-path: /healthz
+            alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+            alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+            alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+            alb.ingress.kubernetes.io/unhealthy-threshold-count: "3"
+            alb.ingress.kubernetes.io/tags: |
+              Environment=dev,
+              Project=my-project,
+              Service=argocd,
+              ManagedBy=kubernetes
+        spec:
+          rules:
+            - host: argocd.dev.yourcompany.com
+              http:
+                paths:
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                      service:
+                        name: argocd-server
+                        port:
+                          number: 443
+
+    # Custom sync policy for ArgoCD (slower sync)
+    syncPolicy:
+      automated:
+        prune: false # Be careful with ArgoCD itself
+        selfHeal: false
+      retry:
+        limit: 3
+
+  # AWS Load Balancer Controller
+  aws-load-balancer-controller:
+    enabled: true
+    namespace: aws-load-balancer-system
+    syncWave: "2" # Deploy after ArgoCD
+    sources: true # Uses multi-source setup
+
+    helm:
+      repoURL: https://aws.github.io/eks-charts
+      chart: aws-load-balancer-controller
+      version: 1.13.4
+
+    labels:
+      app.kubernetes.io/name: aws-load-balancer-controller
+      app.kubernetes.io/component: networking
+
+    # Dependencies - wait for ArgoCD to be healthy
+    annotations:
+      argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+
+  # Cert Manager (if you plan to add it)
+  cert-manager:
+    enabled: false # Disabled by default
+    namespace: cert-manager
+    syncWave: "2"
+    sources: true
+
+    helm:
+      repoURL: https://charts.jetstack.io
+      chart: cert-manager
+      version: v1.13.0
+      parameters:
+        - name: installCRDs
+          value: "true"
+
+    labels:
+      app.kubernetes.io/name: cert-manager
+      app.kubernetes.io/component: security
+
+  # External DNS (if you plan to add it)
+  external-dns:
+    enabled: false # Disabled by default
+    namespace: external-dns
+    syncWave: "3" # Deploy after networking components
+    sources: true
+
+    helm:
+      repoURL: https://kubernetes-sigs.github.io/external-dns
+      chart: external-dns
+      version: 1.14.0
+
+    labels:
+      app.kubernetes.io/name: external-dns
+      app.kubernetes.io/component: networking
