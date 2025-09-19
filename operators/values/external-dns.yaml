@@ -1,0 +1,82 @@
+# External DNS Helm Chart Values
+# Official Chart: https://kubernetes-sigs.github.io/external-dns
+
+# Provider configuration (change based on your DNS provider)
+provider: aws # Options: aws, cloudflare, google, azure, etc.
+
+# AWS-specific configuration (if using AWS Route53)
+aws:
+  region: us-east-1 # Change to your region
+  zoneType: public # or private
+  # assumeRoleArn: "arn:aws:iam::ACCOUNT_ID:role/external-dns-role" # If using IAM roles
+
+# DNS zone filter
+domainFilters:
+  - babak.naserraoofi.com # Your domain
+
+# Annotation filter
+annotationFilter: "external-dns.alpha.kubernetes.io/hostname"
+
+# Sources to watch
+sources:
+  - service
+  - ingress
+
+# Resource configuration
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# Replica count
+replicaCount: 1
+
+# Interval for DNS updates
+interval: 1m
+
+# Log level
+logLevel: info
+
+# TXT record settings
+txtOwnerId: external-dns
+txtPrefix: txt
+
+# Registry settings
+registry: txt
+
+# Policy for DNS records (sync, upsert-only, create-only)
+policy: sync
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 65534
+  runAsGroup: 65534
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 65534
+
+# Service account
+serviceAccount:
+  create: true
+  annotations:
+    {}
+    # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/external-dns-role
+
+# Node selector and tolerations
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Monitoring
+metrics:
+  enabled: false

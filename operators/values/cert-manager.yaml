@@ -1,0 +1,72 @@
+# Cert Manager Helm Chart Values
+# Official Chart: https://charts.jetstack.io
+
+# Install CRDs automatically
+installCRDs: true
+
+# Global configuration
+global:
+  leaderElection:
+    namespace: cert-manager
+
+# Controller configuration
+replicaCount: 1
+
+# Resource requests and limits
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# Node selector and tolerations
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# Enable prometheus metrics
+prometheus:
+  enabled: false
+
+# Webhook configuration
+webhook:
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# CA Injector configuration
+cainjector:
+  enabled: true
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# Startup API check
+startupapicheck:
+  enabled: true
+  timeout: "1m"
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000

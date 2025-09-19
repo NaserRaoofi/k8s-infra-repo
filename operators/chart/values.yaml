@@ -75,7 +75,7 @@ operators:
               ManagedBy=kubernetes
         spec:
           rules:
-            - host: argocd.dev.yourcompany.com
+            - host: argocd.dev.babak.naserraoofi.com
               http:
                 paths:
                   - path: /
@@ -114,9 +114,11 @@ operators:
     annotations:
       argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 
+    # No additional resources needed - ALB Controller is just a controller
+
   # Cert Manager (if you plan to add it)
   cert-manager:
-    enabled: false # Disabled by default
+    enabled: true # Enable cert-manager
     namespace: cert-manager
     syncWave: "2"
     sources: true
@@ -133,9 +135,11 @@ operators:
       app.kubernetes.io/name: cert-manager
       app.kubernetes.io/component: security
 
+    # No additional resources needed - Cert Manager is just a controller
+
   # External DNS (if you plan to add it)
   external-dns:
-    enabled: false # Disabled by default
+    enabled: true # Enable external-dns
     namespace: external-dns
     syncWave: "3" # Deploy after networking components
     sources: true
@@ -148,3 +152,5 @@ operators:
     labels:
       app.kubernetes.io/name: external-dns
       app.kubernetes.io/component: networking
+
+    # No additional resources needed - External DNS is just a controller
