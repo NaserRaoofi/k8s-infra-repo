@@ -1,157 +1,237 @@
-# Operators Chart - App-of-Apps Pattern# Kubernetes Operators
+# Kubernetes Operators - App-of-Apps Pattern
 
-This Helm chart implements the **App-of-Apps pattern** for managing all Kubernetes operators via ArgoCD.This directory contains infrastructure operators that extend Kubernetes functionality and manage complex applications.
+This directory implements the **App-of-Apps GitOps pattern** for managing all Kubernetes operators via ArgoCD.
 
-## 🏗️ Structure## Available Operators
+## 🏗️ Architecture
 
-```### 🚀 **ArgoCD** (`argocd/`)
-
+```
 operators/
+├── chart/                          # Generic Helm chart (App-of-Apps)
+│   ├── Chart.yaml                  # Chart metadata
+│   ├── values.yaml                 # Global configuration & operator settings
+│   └── templates/
+│       ├── argocd-applications.yaml    # ArgoCD Application generator
+│       └── additional-resources.yaml   # Namespaces & ingresses
+├── values/                         # Operator-specific Helm values
+│   ├── argocd.yaml                # ArgoCD Helm chart values
+│   ├── aws-load-balancer-controller.yaml
+│   ├── cert-manager.yaml          # Cert Manager values
+│   └── external-dns.yaml          # External DNS values
+├── operators-app.yaml             # Main App-of-Apps Application
+└── README.md                      # This file
+```
 
-├── chart/ # Generic Helm chart- GitOps continuous delivery operator
+## 🚀 Available Operators
 
-│ ├── Chart.yaml # Chart metadata- Manages application deployments from Git repositories
+### ✅ **ArgoCD**
 
-│ ├── values.yaml # Default configuration- Self-managing ArgoCD installation
+- **Status**: ✅ Deployed & Healthy
+- **URL**: `https://argocd.dev.babak.naserraoofi.com`
+- **Purpose**: GitOps continuous delivery platform
+- **Features**: Self-managing ArgoCD with ALB ingress
 
-│ └── templates/- **Status**: ✅ Installed and configured
+### ✅ **AWS Load Balancer Controller**
 
-│ └── argocd-applications.yaml # ArgoCD Application template
+- **Status**: ✅ Deployed & Healthy
+- **Purpose**: Manages AWS ALB/NLB for Kubernetes ingresses
+- **Features**: Automatic ALB creation, SSL termination, VPC integration
+- **VPC**: `vpc-0ab4e861fb99abb5a`
 
-├── values/ # Operator-specific values### ⚖️ **AWS Load Balancer Controller** (`aws-load-balancer-controller/`)
+### ✅ **Cert Manager**
 
-│ ├── argocd.yaml # ArgoCD Helm values
+- **Status**: ✅ Deployed & Progressing
+- **Purpose**: Automated TLS certificate management
+- **Features**: Let's Encrypt integration, automatic renewal
 
-│ └── aws-load-balancer-controller.yaml # AWS LB Controller values- Manages AWS Application Load Balancers (ALB) and Network Load Balancers (NLB)
+### ✅ **External DNS**
 
-├── operators-app.yaml # Main App-of-Apps Application- Integrates with AWS EKS for ingress traffic
-
-└── README.md # This file- Supports advanced routing and SSL termination
-
-````
-
-### 🌐 **External DNS** (`external-dns/`)
-
-## 🚀 Usage
-
-- Automatically manages DNS records for services and ingresses
-
-### Deploy All Operators- Integrates with AWS Route53, CloudFlare, and other DNS providers
-
-```bash- Synchronizes Kubernetes resources with external DNS
-
-kubectl apply -f operators-app.yaml
-
-```### 🔒 **Cert Manager** (`cert-manager/`)
-
-
-
-### Enable/Disable Operators- Automates TLS certificate management
+- **Status**: ✅ Deployed & Healthy
+- **Purpose**: Automated DNS record management
+- **Domain**: `babak.naserraoofi.com`
+- **Provider**: AWS Route53
 
 Edit `chart/values.yaml`:- Integrates with Let's Encrypt, AWS ACM, and other certificate authorities
 
-```yaml- Handles certificate renewal and rotation
+## 🚀 Quick Start
 
+### 1. Bootstrap ArgoCD (First Time Only)
+
+```bash
+# Run the bootstrap script to install ArgoCD
+./scripts/bootstrap.sh
+```
+
+### 2. Deploy All Operators
+
+```bash
+# Deploy the App-of-Apps
+kubectl apply -f operators/operators-app.yaml
+
+# Check status
+kubectl get applications -n argocd
+```
+
+### 3. Access ArgoCD UI
+
+```bash
+# Get admin password
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+# Access via: https://argocd.dev.babak.naserraoofi.com
+# Username: admin
+```
+
+## ⚙️ Configuration
+
+### Enable/Disable Operators
+
+Edit `chart/values.yaml`:
+
+```yaml
 operators:
+  argocd:
+    enabled: true # ✅ Core GitOps operator
+  aws-load-balancer-controller:
+    enabled: true # ✅ ALB management
+  cert-manager:
+    enabled: true # ✅ Certificate automation
+  external-dns:
+    enabled: true # ✅ DNS automation
+```
 
-  cert-manager:## Structure
+### Customize Operator Values
 
-    enabled: true  # Enable cert-manager
+Edit individual operator values in `values/` directory:
 
-  external-dns:Each operator directory should contain:
+- `values/argocd.yaml` - ArgoCD configuration
+- `values/aws-load-balancer-controller.yaml` - ALB Controller settings
+- `values/cert-manager.yaml` - Certificate manager settings
+- `values/external-dns.yaml` - DNS provider configuration
 
-    enabled: false # Disable external-dns
+### Sync Wave Order
 
-````
+Operators deploy in order based on `syncWave`:
 
-operator-name/
+1. **Wave -5**: Namespaces (automatic)
+2. **Wave 1**: ArgoCD core services
+3. **Wave 2**: Infrastructure operators (ALB Controller, Cert Manager)
+4. **Wave 3**: DNS and networking (External DNS)
 
-### Add New Operator├── namespace.yaml # Dedicated namespace
+## 🔧 Adding New Operators
 
-1. Add operator configuration to `chart/values.yaml`:├── values.yaml # Helm chart values
+1. **Add to values.yaml**:
 
-````yaml├── operator-app.yaml           # ArgoCD Application
-
-operators:└── rbac.yaml                  # RBAC policies (if needed)
-
-  my-new-operator:```
-
+```yaml
+operators:
+  my-new-operator:
     enabled: true
-
-    namespace: my-operator## Installation Order
-
-    syncWave: "2"
-
-    helm:Recommended installation sequence:
-
+    namespace: my-operator-system
+    syncWave: "3"
+    helm:
       repoURL: https://charts.example.com
+      chart: my-operator
+      version: 1.0.0
+```
 
-      chart: my-operator1. **ArgoCD** - Core GitOps operator (✅ Installed)
+2. **Create values file**: `values/my-new-operator.yaml`
 
-      version: 1.0.02. **Cert Manager** - Certificate management foundation
+3. **Commit and push** - ArgoCD auto-syncs changes!
 
-```3. **AWS Load Balancer Controller** - Ingress traffic management
+## 🎯 GitOps Features
 
-4. **External DNS** - DNS automation
-
-2. Create values file: `values/my-new-operator.yaml`
-
-## Best Practices
-
-## 🎯 Features
-
-1. **Dedicated namespaces** for each operator
-
-- ✅ **Centralized Management**: All operators in one place2. **RBAC policies** with minimal required permissions
-
-- ✅ **Sync Waves**: Control deployment order  3. **Resource limits** and monitoring
-
-- ✅ **Multi-Source**: Helm charts + Git repository values4. **High availability** configurations for production
-
-- ✅ **Automated Sync**: GitOps-native operation5. **Regular updates** and security patches
-
-- ✅ **Environment Support**: Easy prod/dev/staging configurations
-- ✅ **Selective Deployment**: Enable/disable operators easily
-
-## 🔧 Configuration
-
-### Global Settings
-- `global.gitRepo`: Your Git repository URL
-- `global.argocdNamespace`: ArgoCD namespace
-- `global.syncPolicy`: Default sync behavior
-
-### Per-Operator Settings
-- `enabled`: Whether to deploy this operator
-- `namespace`: Target namespace
-- `syncWave`: Deployment order (lower numbers deploy first)
-- `helm`: Helm chart configuration
-- `labels/annotations`: Custom metadata
-
-## 📋 Migration from Individual Apps
-
-To migrate from individual ArgoCD Applications:
-
-1. **Deploy the operators chart**:
-   ```bash
-   kubectl apply -f operators-app.yaml
-````
-
-2. **Verify all applications are created**:
-
-   ```bash
-   kubectl get applications -n argocd
-   ```
-
-3. **Remove old individual Applications** (optional):
-   ```bash
-   kubectl delete application argocd -n argocd
-   kubectl delete application aws-load-balancer-controller -n argocd
-   ```
+- ✅ **Centralized Management**: All operators managed from single source
+- ✅ **Sync Waves**: Controlled deployment order (-5 → 1 → 2 → 3)
+- ✅ **Multi-Source**: Official Helm charts + custom values from Git
+- ✅ **Auto-Sync**: Changes in Git automatically deployed to cluster
+- ✅ **Self-Healing**: Cluster drift automatically corrected
+- ✅ **Environment Agnostic**: Same pattern for dev/staging/prod
 
 ## 🛡️ Best Practices
 
-1. **Use Sync Waves**: Control deployment order with `syncWave`
-2. **Test Changes**: Use `helm template` to preview changes
+1. **Use Sync Waves**: Control deployment order with appropriate `syncWave` values
+2. **Test Locally**: Preview changes with `helm template` before committing
+3. **Version Control**: All configuration changes tracked in Git
+4. **Minimal Permissions**: Each operator uses dedicated service accounts
+5. **Resource Limits**: Set appropriate CPU/memory limits for production
+6. **Monitoring**: Watch ArgoCD UI for application health status
+
+## 🔍 Troubleshooting
+
+### Check Application Status
+
+```bash
+# View all applications
+kubectl get applications -n argocd
+
+# Check specific operator status
+kubectl describe application aws-load-balancer-controller -n argocd
+```
+
+### View Operator Logs
+
+```bash
+# ALB Controller logs
+kubectl logs -n aws-load-balancer-system deployment/aws-load-balancer-controller
+
+# Cert Manager logs
+kubectl logs -n cert-manager deployment/cert-manager
+```
+
+### Manual Sync
+
+```bash
+# Force sync specific operator
+kubectl patch application operators -n argocd --type merge -p '{"operation":{"sync":{"prune":true}}}'
+```
+
+### Validate Helm Template
+
+```bash
+# Test chart locally
+helm template operators chart/ --debug --dry-run
+```
+
+## 🚨 Common Issues
+
+### ALB Controller Permissions
+
+If ingress doesn't get ADDRESS, check IAM role permissions:
+
+```bash
+kubectl describe ingress -n argocd
+# Look for AWS permission errors in events
+```
+
+### ArgoCD Sync Failures
+
+```bash
+# Check for template parsing errors
+kubectl describe application operators -n argocd | grep -A 10 "ComparisonError"
+```
+
+### DNS Resolution
+
+```bash
+# Check external-dns logs for Route53 issues
+kubectl logs -n external-dns deployment/external-dns
+```
+
+## 📚 References
+
+- [ArgoCD App-of-Apps Pattern](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/)
+- [AWS Load Balancer Controller](https://kubernetes-sigs.github.io/aws-load-balancer-controller/)
+- [Cert Manager Documentation](https://cert-manager.io/docs/)
+- [External DNS Guide](https://github.com/kubernetes-sigs/external-dns)
+
+## 🏷️ Current Configuration
+
+- **Repository**: `https://github.com/NaserRaoofi/k8s-infra-repo`
+- **Branch**: `main`
+- **ArgoCD URL**: `https://argocd.dev.babak.naserraoofi.com`
+- **Domain**: `babak.naserraoofi.com`
+- **VPC**: `vpc-0ab4e861fb99abb5a`
+- **Region**: `us-east-1`
+
 3. **Version Control**: Tag chart versions for releases
 4. **Environment Values**: Use separate values files for different environments
 5. **Monitoring**: Watch ArgoCD UI for application health
