@@ -35,7 +35,7 @@ operators/
 - **Status**: ✅ Deployed & Healthy
 - **Purpose**: Manages AWS ALB/NLB for Kubernetes ingresses
 - **Features**: Automatic ALB creation, SSL termination, VPC integration
-- **VPC**: `vpc-0ab4e861fb99abb5a`
+- **VPC**: `vpc-0845b7ed5ceac1a19`
 
 ### ✅ **Cert Manager**
 
@@ -229,7 +229,7 @@ kubectl logs -n external-dns deployment/external-dns
 - **Branch**: `main`
 - **ArgoCD URL**: `https://argocd.dev.babak.naserraoofi.com`
 - **Domain**: `babak.naserraoofi.com`
-- **VPC**: `vpc-0ab4e861fb99abb5a`
+- **VPC**: `vpc-0845b7ed5ceac1a19`
 - **Region**: `us-east-1`
 
 3. **Version Control**: Tag chart versions for releases

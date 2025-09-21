@@ -117,7 +117,7 @@ ingressClassParams:
 createIngressClassResource: true
 
 # The VPC ID for the Kubernetes cluster
-vpcId: vpc-0ab4e861fb99abb5a
+vpcId: vpc-0845b7ed5ceac1a19
 
 # This is alternative to vpcId - will be auto-detected
 vpcTags: {}
