@@ -1,6 +1,6 @@
 apiVersion: v2
 name: operators
-description: A generic Helm chart for managing Kubernetes operators using App-of-Apps GitOps pattern
+description: App-of-Apps pattern for GitOps operators management
 type: application
 version: 0.1.0
 appVersion: "1.0"

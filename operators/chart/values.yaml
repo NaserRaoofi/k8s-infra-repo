@@ -60,6 +60,7 @@ operators:
             alb.ingress.kubernetes.io/scheme: internet-facing
             alb.ingress.kubernetes.io/target-type: ip
             alb.ingress.kubernetes.io/load-balancer-name: argocd-alb
+            alb.ingress.kubernetes.io/subnets: subnet-041bc5e23d8702c3c,subnet-084607786295a27fb
             alb.ingress.kubernetes.io/backend-protocol: HTTPS
             alb.ingress.kubernetes.io/backend-protocol-version: HTTP1
             alb.ingress.kubernetes.io/healthcheck-protocol: HTTPS
