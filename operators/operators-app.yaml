@@ -24,14 +24,6 @@ spec:
       # Default values file
       valueFiles:
         - values.yaml
-      # Environment-specific overrides (uncomment as needed)
-      # parameters:
-      #   - name: global.gitRef
-      #     value: main
-      #   - name: operators.cert-manager.enabled
-      #     value: "true"
-      #   - name: operators.external-dns.enabled
-      #     value: "true"
 
   destination:
     server: https://kubernetes.default.svc

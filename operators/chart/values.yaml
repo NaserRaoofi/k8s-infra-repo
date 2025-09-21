@@ -113,40 +113,40 @@ operators:
     # No additional resources needed - ALB Controller is just a controller
 
   # Cert Manager (if you plan to add it)
-  cert-manager:
-    enabled: true # Enable cert-manager
-    namespace: cert-manager
-    syncWave: "2"
-    sources: true
+  # cert-manager:
+  #   enabled: true # Enable cert-manager
+  #   namespace: cert-manager
+  #   syncWave: "2"
+  #   sources: true
 
-    helm:
-      repoURL: https://charts.jetstack.io
-      chart: cert-manager
-      version: v1.13.0
-      parameters:
-        - name: installCRDs
-          value: "true"
+  #   helm:
+  #     repoURL: https://charts.jetstack.io
+  #     chart: cert-manager
+  #     version: v1.13.0
+  #     parameters:
+  #       - name: installCRDs
+  #         value: "true"
 
-    labels:
-      app.kubernetes.io/name: cert-manager
-      app.kubernetes.io/component: security
+  #   labels:
+  #     app.kubernetes.io/name: cert-manager
+  #     app.kubernetes.io/component: security
 
-    # No additional resources needed - Cert Manager is just a controller
+  #   # No additional resources needed - Cert Manager is just a controller
 
   # External DNS (if you plan to add it)
-  external-dns:
-    enabled: true # Enable external-dns
-    namespace: external-dns
-    syncWave: "3" # Deploy after networking components
-    sources: true
+  # external-dns:
+  #   enabled: true # Enable external-dns
+  #   namespace: external-dns
+  #   syncWave: "3" # Deploy after networking components
+  #   sources: true
 
-    helm:
-      repoURL: https://kubernetes-sigs.github.io/external-dns
-      chart: external-dns
-      version: 1.14.0
+  #   helm:
+  #     repoURL: https://kubernetes-sigs.github.io/external-dns
+  #     chart: external-dns
+  #     version: 1.14.0
 
-    labels:
-      app.kubernetes.io/name: external-dns
-      app.kubernetes.io/component: networking
+  #   labels:
+  #     app.kubernetes.io/name: external-dns
+  #     app.kubernetes.io/component: networking
 
-    # No additional resources needed - External DNS is just a controller
+  #   # No additional resources needed - External DNS is just a controller
