@@ -37,15 +37,15 @@ operators/
 - **Features**: Automatic ALB creation, SSL termination, VPC integration
 - **VPC**: `vpc-0845b7ed5ceac1a19`
 
-### ✅ **Cert Manager**
+### 🟡 **Cert Manager**
 
-- **Status**: ✅ Deployed & Progressing
+- **Status**: 🟡 Commented Out (Available for Future Use)
 - **Purpose**: Automated TLS certificate management
 - **Features**: Let's Encrypt integration, automatic renewal
 
-### ✅ **External DNS**
+### 🟡 **External DNS**
 
-- **Status**: ✅ Deployed & Healthy
+- **Status**: 🟡 Commented Out (Available for Future Use)
 - **Purpose**: Automated DNS record management
 - **Domain**: `babak.naserraoofi.com`
 - **Provider**: AWS Route53
@@ -94,9 +94,9 @@ operators:
   aws-load-balancer-controller:
     enabled: true # ✅ ALB management
   cert-manager:
-    enabled: true # ✅ Certificate automation
+    enabled: false # 🟡 Currently commented out
   external-dns:
-    enabled: true # ✅ DNS automation
+    enabled: false # 🟡 Currently commented out
 ```
 
 ### Customize Operator Values
@@ -114,8 +114,8 @@ Operators deploy in order based on `syncWave`:
 
 1. **Wave -5**: Namespaces (automatic)
 2. **Wave 1**: ArgoCD core services
-3. **Wave 2**: Infrastructure operators (ALB Controller, Cert Manager)
-4. **Wave 3**: DNS and networking (External DNS)
+3. **Wave 2**: Infrastructure operators (ALB Controller)
+4. **Wave 3**: [Future: Cert Manager, External DNS]
 
 ## 🔧 Adding New Operators
 

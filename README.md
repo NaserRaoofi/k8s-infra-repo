@@ -8,46 +8,41 @@ This repository implements the **App-of-Apps pattern** using ArgoCD to manage a 
 
 ```
 operators-app.yaml (App-of-Apps)
-├── ArgoCD (GitOps Controller)
-├── AWS Load Balancer Controller
-├── Cert Manager (SSL Certificates)
-└── External DNS (Route53 Integration)
+├── ArgoCD (GitOps Controller + Ingress)
+├── AWS Load Balancer Controller (ALB Management)
+├── Cert Manager (SSL Certificates) - [Commented for future use]
+└── External DNS (Route53 Integration) - [Commented for future use]
 ```
 
 ## 📁 Repository Structure
 
 ```
-├── clusters/                     # Environment-specific configurations
-│   └── dev/
-│       ├── kustomization.yaml
-│       ├── apps/
-│       ├── ingress/
-│       └── monitoring/
 ├── operators/                    # Main App-of-Apps implementation
 │   ├── operators-app.yaml       # 🎯 Main entry point - deploys everything
 │   ├── chart/                   # Generic Helm chart for operators
-│   │   ├── Chart.yaml
-│   │   ├── values.yaml          # Operator enable/disable and configuration
+│   │   ├── Chart.yaml           # Helm chart metadata
+│   │   ├── values.yaml          # Operator configuration (enable/disable)
 │   │   └── templates/
-│   │       ├── argocd-applications.yaml      # Creates child ArgoCD apps
+│   │       ├── argocd-applications.yaml      # Creates ArgoCD apps
 │   │       └── additional-resources.yaml     # Namespaces and ingresses
 │   └── values/                  # Operator-specific Helm values
-│       ├── argocd.yaml
-│       ├── aws-load-balancer-controller.yaml
-│       ├── cert-manager.yaml
-│       └── external-dns.yaml
+│       ├── argocd.yaml          # ArgoCD custom configuration
+│       └── aws-load-balancer-controller.yaml # ALB Controller config
 ├── scripts/
-│   └── bootstrap.sh             # Initial setup script
-└── modules/                     # Reusable modules
+│   └── bootstrap.sh             # 🚀 One-time setup script
+└── clusters/                    # Environment-specific configurations (legacy)
+    └── dev/
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-1. **EKS Cluster** with proper IAM roles
-2. **kubectl** configured to connect to your cluster
-3. **Helm** repositories configured:
+1. **EKS Cluster**: `my-project-dev-eks` with proper IAM roles
+2. **kubectl** configured: `aws eks update-kubeconfig --region us-east-1 --name my-project-dev-eks`
+3. **VPC Configuration**: `vpc-0845b7ed5ceac1a19` with properly tagged subnets
+4. **IAM Role**: `dev-my-project-alb-controller-role` with ALB permissions
+5. **Helm** repositories configured
    ```bash
    helm repo add argo https://argoproj.github.io/argo-helm
    helm repo add eks https://aws.github.io/eks-charts
@@ -80,12 +75,12 @@ kubectl apply -f operators/operators-app.yaml
 
 ### Core Operators
 
-| Component                        | Purpose                    | Status      | Access                                     |
-| -------------------------------- | -------------------------- | ----------- | ------------------------------------------ |
-| **ArgoCD**                       | GitOps Controller          | ✅ Deployed | `https://argocd.dev.babak.naserraoofi.com` |
-| **AWS Load Balancer Controller** | ALB/NLB Management         | ✅ Deployed | Internal Controller                        |
-| **Cert Manager**                 | SSL Certificate Management | ✅ Deployed | Internal Controller                        |
-| **External DNS**                 | Route53 DNS Automation     | ✅ Deployed | Internal Controller                        |
+| Component                        | Purpose                    | Status       | Access                                     |
+| -------------------------------- | -------------------------- | ------------ | ------------------------------------------ |
+| **ArgoCD**                       | GitOps Controller          | ✅ Deployed  | `https://argocd.dev.babak.naserraoofi.com` |
+| **AWS Load Balancer Controller** | ALB/NLB Management         | ✅ Deployed  | Internal Controller                        |
+| **Cert Manager**                 | SSL Certificate Management | 🟡 Commented | Ready for future use                       |
+| **External DNS**                 | Route53 DNS Automation     | 🟡 Commented | Ready for future use                       |
 
 ### Sync Wave Order
 
@@ -93,8 +88,8 @@ kubectl apply -f operators/operators-app.yaml
 Wave -10: operators-app (App-of-Apps)
 Wave -5:  Namespaces
 Wave 1:   ArgoCD
-Wave 2:   AWS Load Balancer Controller, Cert Manager
-Wave 3:   External DNS
+Wave 2:   AWS Load Balancer Controller
+Wave 3:   [Future: Cert Manager, External DNS]
 Wave 4+:  Applications and additional resources
 ```
 
@@ -106,7 +101,7 @@ Current setup is configured for:
 
 - **AWS Account:** `817100478429`
 - **Region:** `us-east-1`
-- **VPC:** `vpc-0ab4e861fb99abb5a`
+- **VPC:** `vpc-0845b7ed5ceac1a19`
 - **Cluster:** `my-project-dev-eks`
 - **Domain:** `babak.naserraoofi.com`
 
@@ -121,9 +116,9 @@ operators:
   aws-load-balancer-controller:
     enabled: true # Required for ALB ingresses
   cert-manager:
-    enabled: true # Toggle as needed
+    enabled: false # Currently commented out
   external-dns:
-    enabled: true # Toggle as needed
+    enabled: false # Currently commented out
 ```
 
 ### Customizing Operator Configuration

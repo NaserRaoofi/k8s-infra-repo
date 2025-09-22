@@ -2,6 +2,8 @@
 
 This directory contains core infrastructure services that support your applications across all environments.
 
+> **Note**: Currently focusing on essential operators (ArgoCD + ALB Controller). Infrastructure services below are planned for future implementation.
+
 ## Structure
 
 ### 📊 **databases/**
