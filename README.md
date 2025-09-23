@@ -30,8 +30,25 @@ operators-app.yaml (App-of-Apps)
 │       └── aws-load-balancer-controller.yaml # ALB Controller config
 ├── scripts/
 │   └── bootstrap.sh             # 🚀 One-time setup script
-└── clusters/                    # Environment-specific configurations (legacy)
-    └── dev/
+├── infrastructure/              # 🏗️ Application services and databases
+│   ├── databases/               # Database configurations
+│   ├── monitoring/              # Observability stack
+│   ├── logging/                 # Centralized logging
+│   └── networking/              # Network policies and mesh
+└── terraform/                   # 🌍 Infrastructure as Code (Future)
+    └── environments/
+        └── dev/
+            ├── main.tf          # 🎯 Main orchestration file
+            ├── variables.tf     # 📝 Environment variables
+            ├── outputs.tf       # 📤 Environment outputs
+            ├── terraform.tfvars # ⚙️ Configuration values
+            ├── versions.tf      # 🔒 Provider requirements
+            └── services/        # 🔧 Service modules
+                ├── networking/  # 🌐 VPC, subnets, gateways
+                ├── compute/     # 💻 EC2, EKS, ALB
+                ├── storage/     # 🗄️ RDS, S3, DynamoDB
+                ├── security/    # 🔒 Security Groups, IAM
+                └── monitoring/  # 📊 CloudWatch, alarms
 ```
 
 ## 🚀 Quick Start
@@ -129,6 +146,42 @@ Each operator has its dedicated values file in [`operators/values/`](operators/v
 - **ALB Controller:** [`aws-load-balancer-controller.yaml`](operators/values/aws-load-balancer-controller.yaml)
 - **Cert Manager:** [`cert-manager.yaml`](operators/values/cert-manager.yaml)
 - **External DNS:** [`external-dns.yaml`](operators/values/external-dns.yaml)
+
+## 🌍 Infrastructure as Code (Future Expansion)
+
+This repository can be extended to include Terraform for complete infrastructure management:
+
+### Terraform Structure
+
+```
+terraform/environments/dev/
+├── main.tf                 # 🎯 Main orchestration file
+├── variables.tf            # 📝 Environment variables
+├── outputs.tf             # 📤 Environment outputs
+├── terraform.tfvars       # ⚙️ Configuration values
+├── versions.tf            # 🔒 Provider requirements
+└── services/              # 🔧 Service modules
+    ├── networking/        # 🌐 VPC, subnets, gateways
+    │   ├── vpc.tf
+    │   ├── variables.tf
+    │   └── outputs.tf
+    ├── compute/           # 💻 EC2, EKS, ALB
+    ├── storage/           # 🗄️ RDS, S3, DynamoDB
+    ├── security/          # 🔒 Security Groups, IAM
+    └── monitoring/        # 📊 CloudWatch, alarms
+```
+
+### Infrastructure Workflow
+
+1. **Provision Infrastructure**: `terraform apply` creates AWS resources
+2. **Deploy Operators**: ArgoCD App-of-Apps manages Kubernetes workloads
+3. **Deploy Applications**: GitOps workflow for application lifecycle
+
+This separation allows:
+
+- **Infrastructure Team**: Manages cloud resources with Terraform
+- **Platform Team**: Manages operators and platform services with ArgoCD
+- **Application Teams**: Deploy apps using GitOps patterns
 
 ## 🔄 GitOps Workflow
 
@@ -233,7 +286,31 @@ kubectl get events -n aws-load-balancer-system --sort-by='.lastTimestamp'
 
 ## 🏷️ Releases
 
-- **v1.0.0** - Initial App-of-Apps implementation with ArgoCD, ALB Controller, Cert Manager, and External DNS
+- **v1.0.0** - Initial App-of-Apps implementation with ArgoCD and ALB Controller
+- **Future v2.0.0** - Terraform integration for complete infrastructure management
+
+## 🗺️ Roadmap
+
+### Phase 1: GitOps Foundation ✅
+
+- [x] ArgoCD App-of-Apps pattern implementation
+- [x] AWS Load Balancer Controller integration
+- [x] Automated bootstrap process
+- [x] Production-ready documentation
+
+### Phase 2: Enhanced Operators 🔄
+
+- [ ] Enable Cert Manager for SSL automation
+- [ ] Enable External DNS for Route53 integration
+- [ ] Add monitoring stack (Prometheus/Grafana)
+- [ ] Add logging stack (ELK/Loki)
+
+### Phase 3: Infrastructure as Code 📋
+
+- [ ] Terraform modules for AWS infrastructure
+- [ ] EKS cluster provisioning automation
+- [ ] Network and security configuration
+- [ ] Multi-environment support (dev/staging/prod)
 
 ## 🤝 Contributing
 
